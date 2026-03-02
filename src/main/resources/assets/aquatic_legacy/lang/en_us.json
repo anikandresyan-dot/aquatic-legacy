@@ -1,0 +1,23 @@
+{
+    "itemGroup.aquatic_legacy": "Aquatic Legacy: Prehistoric Seas",
+    "entity.aquatic_legacy.elasmosaurus": "Elasmosaurus",
+    "entity.aquatic_legacy.kronosaurus": "Kronosaurus",
+    "entity.aquatic_legacy.dunkleosteus": "Dunkleosteus",
+    "entity.aquatic_legacy.shonisaurus": "Shonisaurus",
+    "entity.aquatic_legacy.tylosaurus": "Tylosaurus",
+    "entity.aquatic_legacy.archelon": "Archelon",
+    "item.aquatic_legacy.elasmosaurus_spawn_egg": "Elasmosaurus Spawn Egg",
+    "item.aquatic_legacy.kronosaurus_spawn_egg": "Kronosaurus Spawn Egg",
+    "item.aquatic_legacy.dunkleosteus_spawn_egg": "Dunkleosteus Spawn Egg",
+    "item.aquatic_legacy.shonisaurus_spawn_egg": "Shonisaurus Spawn Egg",
+    "item.aquatic_legacy.tylosaurus_spawn_egg": "Tylosaurus Spawn Egg",
+    "item.aquatic_legacy.archelon_spawn_egg": "Archelon Spawn Egg",
+    "item.aquatic_legacy.elasmosaurus_dna": "Elasmosaurus DNA",
+    "item.aquatic_legacy.kronosaurus_dna": "Kronosaurus DNA",
+    "item.aquatic_legacy.dunkleosteus_dna": "Dunkleosteus DNA",
+    "item.aquatic_legacy.shonisaurus_dna": "Shonisaurus DNA",
+    "item.aquatic_legacy.tylosaurus_dna": "Tylosaurus DNA",
+    "item.aquatic_legacy.archelon_dna": "Archelon DNA",
+    "item.aquatic_legacy.aquatic_fossil": "Aquatic Fossil",
+    "item.aquatic_legacy.ancient_scale": "Ancient Scale"
+}
