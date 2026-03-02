@@ -2,67 +2,55 @@ package com.github.aquaticlegacy.entity.ai;
 
 import com.github.aquaticlegacy.entity.prehistoric.AquaticPrehistoric;
 import net.minecraft.core.BlockPos;
-import net.minecraft.world.entity.ai.goal.Goal;
+import net.minecraft.core.Position;
+import net.minecraft.tags.FluidTags;
+import net.minecraft.util.RandomSource;
+import net.minecraft.world.entity.ai.behavior.BehaviorUtils;
+import net.minecraft.world.entity.ai.goal.RandomSwimmingGoal;
 import net.minecraft.world.phys.Vec3;
-
-import java.util.EnumSet;
+import org.jetbrains.annotations.Nullable;
 
 /**
- * Random swimming behavior for aquatic prehistoric creatures.
- * Uses Pure Vanilla 1.20 PathNavigation for buttery smooth movement.
+ * 1:1 Replica of F&A Revival 1.20's `DinoRandomSwimGoal`.
+ * Extends standard `RandomSwimmingGoal` but overrides water validation constraints.
  */
-public class AquaticSwimGoal extends Goal {
-    private final AquaticPrehistoric entity;
+public class AquaticSwimGoal extends RandomSwimmingGoal {
+    private final AquaticPrehistoric dino;
 
-    public AquaticSwimGoal(AquaticPrehistoric entity) {
-        this.entity = entity;
-        this.setFlags(EnumSet.of(Flag.MOVE, Flag.LOOK));
+    public AquaticSwimGoal(AquaticPrehistoric dino, double speedModifier) {
+        super(dino, speedModifier, 10);
+        this.dino = dino;
     }
 
     @Override
     public boolean canUse() {
-        if (entity.isSleeping()) return false;
-        if (entity.getOrder() == AquaticPrehistoric.ORDER_STAY) return false;
-        if (!entity.isInWater()) return false;
-        if (entity.getNavigation().isDone() && entity.getRandom().nextInt(10) == 0) {
-            return true;
+        if (!this.dino.isInWater() || this.dino.getTarget() != null || this.dino.getOrder() != AquaticPrehistoric.ORDER_WANDER) {
+            return false;
         }
-        return false;
+        return super.canUse();
     }
 
+    @Nullable
     @Override
-    public boolean canContinueToUse() {
-        return !entity.getNavigation().isDone() && entity.isInWater() && !entity.isSleeping();
-    }
-
-    @Override
-    public void start() {
-        Vec3 pos = findTargetPos();
-        if (pos != null) {
-            entity.getNavigation().moveTo(pos.x, pos.y, pos.z, 1.0D);
+    protected Vec3 getPosition() {
+        Vec3 targetPos = BehaviorUtils.getRandomSwimmablePos(this.dino, 10, 7);
+        if (targetPos != null && this.dino.level().getFluidState(BlockPos.containing(targetPos)).is(FluidTags.WATER)) {
+            return targetPos;
         }
-    }
-
-    @Override
-    public void stop() {
-        entity.getNavigation().stop();
-    }
-
-    private Vec3 findTargetPos() {
-        BlockPos pos = entity.blockPosition();
-
-        for (int attempts = 0; attempts < 10; attempts++) {
-            double dx = (entity.getRandom().nextFloat() * 2.0F - 1.0F) * 16.0F;
-            double dz = (entity.getRandom().nextFloat() * 2.0F - 1.0F) * 16.0F;
-            double dy = (entity.getRandom().nextFloat() * 2.0F - 1.0F) * 8.0F;
-
-            double tx = pos.getX() + dx;
-            double ty = Math.max(entity.level().getMinBuildHeight() + 3, pos.getY() + dy);
-            double tz = pos.getZ() + dz;
-
-            BlockPos targetPos = BlockPos.containing(tx, ty, tz);
-            if (!entity.level().getFluidState(targetPos).isEmpty()) {
-                return new Vec3(tx, ty, tz);
+        
+        BlockPos.MutableBlockPos mutableBlockPos = new BlockPos.MutableBlockPos();
+        RandomSource random = this.dino.getRandom();
+        
+        if (this.dino.getTarget() == null || this.dino.getTarget().isDeadOrDying()) {
+            for (int i = 0; i < 20; ++i) {
+                mutableBlockPos.set(
+                    this.dino.blockPosition().getX() + random.nextInt(16) - 7,
+                    this.dino.blockPosition().getY() + random.nextInt(8) - 4,
+                    this.dino.blockPosition().getZ() + random.nextInt(16) - 7
+                );
+                if (this.dino.level().getFluidState(mutableBlockPos).is(FluidTags.WATER)) {
+                    return Vec3.atBottomCenterOf(mutableBlockPos); // F&A logic wrapper
+                }
             }
         }
         return null;
