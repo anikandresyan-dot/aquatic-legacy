@@ -93,14 +93,6 @@ public class AquaticEatGoal extends Goal {
                 motion.y + (dy / dist) * ACCELERATION,
                 motion.z + (dz / dist) * ACCELERATION
             );
-
-            // Yaw from motion
-            Vec3 newMotion = entity.getDeltaMovement();
-            if (newMotion.x * newMotion.x + newMotion.z * newMotion.z > 0.0001) {
-                float yaw = -((float) Math.atan2(newMotion.x, newMotion.z)) * (180F / (float) Math.PI);
-                entity.setYRot(yaw);
-                entity.yBodyRot = yaw;
-            }
         }
 
         entity.getLookControl().setLookAt(targetFood, 30, 30);
