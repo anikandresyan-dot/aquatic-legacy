@@ -1,0 +1,46 @@
+name: Build Mod JAR
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
+      - name: Download and setup Gradle
+        run: |
+          wget -q https://services.gradle.org/distributions/gradle-8.1.1-bin.zip
+          unzip -q gradle-8.1.1-bin.zip
+          echo "$PWD/gradle-8.1.1/bin" >> $GITHUB_PATH
+
+      - name: Generate Gradle Wrapper
+        run: |
+          gradle wrapper --gradle-version 8.1.1
+          chmod +x gradlew
+
+      - name: Build with Gradle
+        run: ./gradlew build --stacktrace --info
+
+      - name: List build output
+        if: always()
+        run: find build/libs -type f 2>/dev/null || echo "No build/libs directory"
+
+      - name: Upload JAR artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: aquatic-legacy-mod
+          path: build/libs/*.jar
+          if-no-files-found: warn
