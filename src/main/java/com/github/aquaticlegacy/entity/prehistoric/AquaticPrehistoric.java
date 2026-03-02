@@ -87,7 +87,7 @@ public abstract class AquaticPrehistoric extends WaterAnimal implements GeoEntit
     // ========== Constructor ==========
     protected AquaticPrehistoric(EntityType<? extends WaterAnimal> entityType, Level level) {
         super(entityType, level);
-        this.moveControl = new SmoothSwimmingMoveControl(this, 85, 10, 0.02F, 0.5F, true);
+        this.moveControl = new com.github.aquaticlegacy.entity.ai.control.AquaticSwimMoveControl(this);
         this.lookControl = new SmoothSwimmingLookControl(this, 10);
         this.setPathfindingMalus(BlockPathTypes.WATER, 0.0F);
     }
@@ -484,11 +484,10 @@ public abstract class AquaticPrehistoric extends WaterAnimal implements GeoEntit
     @Override
     public void travel(Vec3 travelVector) {
         if (this.isEffectiveAi() && this.isInWater()) {
-            // Native 1.20 Dolphin-like travel mechanics
             this.moveRelative(this.getSpeed(), travelVector);
             this.move(MoverType.SELF, this.getDeltaMovement());
             this.setDeltaMovement(this.getDeltaMovement().scale(0.9D));
-            if (this.getTarget() == null) {
+            if (!this.onGround() && this.level().getFluidState(this.blockPosition().below()).is(net.minecraft.tags.FluidTags.WATER)) {
                 this.setDeltaMovement(this.getDeltaMovement().add(0.0D, -0.005D, 0.0D));
             }
         } else {
