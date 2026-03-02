@@ -25,14 +25,7 @@ public class AquaticBreathGoal extends Goal {
 
     @Override
     public boolean canUse() {
-        if (entity.isSleeping()) return false;
-
-        surfaceCooldown--;
-        if (surfaceCooldown <= 0) {
-            surfaceCooldown = 600 + entity.getRandom().nextInt(400);
-            return entity.isInWater();
-        }
-        return false;
+        return false; // Disabled to prevent erratic vertical bobbing
     }
 
     @Override
