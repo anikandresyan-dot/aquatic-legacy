@@ -69,31 +69,30 @@ public class AquaticSwimGoal extends Goal {
         double dz = waypointZ - entity.getZ();
         double dist = Math.sqrt(dx * dx + dy * dy + dz * dz);
 
-        // Course change on cooldown (like F&A Revival)
+        // Periodically check if we reached the target or need a new one
         if (--courseChangeCooldown <= 0) {
             courseChangeCooldown = entity.getRandom().nextInt(10) + 5;
-
-            if (dist > 0.5 && isTargetInWater()) {
-                // Direct deltaMovement manipulation — the F&A Revival way
-                Vec3 motion = entity.getDeltaMovement();
-                entity.setDeltaMovement(
-                    motion.x + (dx / dist) * ACCELERATION,
-                    motion.y + (dy / dist) * ACCELERATION,
-                    motion.z + (dz / dist) * ACCELERATION
-                );
-            } else {
-                // Target not reachable, pick new one
+            if (dist <= 1.0 || !isTargetInWater()) {
                 pickRandomSwimTarget();
+                dx = waypointX - entity.getX();
+                dy = waypointY - entity.getY();
+                dz = waypointZ - entity.getZ();
+                dist = Math.sqrt(dx * dx + dy * dy + dz * dz);
             }
         }
 
-        // Update yaw based on motion direction (F&A Revival style)
-        Vec3 motion = entity.getDeltaMovement();
-        if (motion.x * motion.x + motion.z * motion.z > 0.0001) {
-            float yaw = -((float) Math.atan2(motion.x, motion.z)) * (180F / (float) Math.PI);
-            entity.setYRot(yaw);
-            entity.yBodyRot = yaw;
+        // Apply acceleration continuously (F&A Revival style)
+        if (dist > 0.5) {
+            Vec3 motion = entity.getDeltaMovement();
+            entity.setDeltaMovement(
+                motion.x + (dx / dist) * ACCELERATION,
+                motion.y + (dy / dist) * ACCELERATION,
+                motion.z + (dz / dist) * ACCELERATION
+            );
         }
+
+        // Use native look control instead of manual backwards yaw snapping
+        entity.getLookControl().setLookAt(waypointX, waypointY, waypointZ, 10.0f, 40.0f);
 
         // Stuck detection
         if (swimTimer % STUCK_CHECK_INTERVAL == 0) {
