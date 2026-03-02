@@ -78,14 +78,32 @@ public class AquaticGrabAttackGoal extends Goal {
                 double dz = target.getZ() - entity.getZ();
                 double d = Math.sqrt(dx * dx + dy * dy + dz * dz);
                 if (d > 0.5) {
-                    double accel = 0.12 * speedModifier;
-                    net.minecraft.world.phys.Vec3 motion = entity.getDeltaMovement();
-                    entity.setDeltaMovement(
-                        motion.x + (dx / d) * accel,
-                        motion.y + (dy / d) * accel,
-                        motion.z + (dz / d) * accel
-                    );
+                    // F&A Revival Pulsing Acceleration
+                    // Reusing attackTimer roughly or just entity.tickCount
+                    if (entity.tickCount % 10 == 0) {
+                        double accel = 0.12 * speedModifier;
+                        net.minecraft.world.phys.Vec3 motion = entity.getDeltaMovement();
+                        entity.setDeltaMovement(
+                            motion.x + (dx / d) * accel,
+                            motion.y + (dy / d) * accel,
+                            motion.z + (dz / d) * accel
+                        );
+                    }
                 }
+            }
+            
+            // F&A Revival yaw interpolation (offset by 180 for 1.20.1 Blockbench models)
+            net.minecraft.world.phys.Vec3 motion = entity.getDeltaMovement();
+            if (motion.x * motion.x + motion.z * motion.z > 0.0001) {
+                // Native smooth look control as backup
+                entity.getLookControl().setLookAt(target, 30.0F, 30.0F);
+                
+                float targetYaw = (float) (Math.atan2(motion.z, motion.x) * (180D / Math.PI)) - 90.0F;
+                float smoothYaw = net.minecraft.util.Mth.approachDegrees(entity.getYRot(), targetYaw, 15.0F);
+                
+                entity.setYRot(smoothYaw);
+                entity.yBodyRot = smoothYaw;
+                entity.yHeadRot = smoothYaw;
             } else if (attackTimer <= 0) {
                 // Attempt grab on large enough adults
                 if (entity.isAdult() && entity.getRandom().nextFloat() < 0.3f) {
