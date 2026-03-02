@@ -69,10 +69,18 @@ public class AquaticSwimGoal extends Goal {
         double dz = waypointZ - entity.getZ();
         double dist = Math.sqrt(dx * dx + dy * dy + dz * dz);
 
-        // Periodically check if we reached the target or need a new one
+        // F&A Revival Pulsing Acceleration
         if (--courseChangeCooldown <= 0) {
             courseChangeCooldown = entity.getRandom().nextInt(10) + 5;
-            if (dist <= 1.0 || !isTargetInWater()) {
+            
+            if (dist > 1.0 && isTargetInWater()) {
+                Vec3 motion = entity.getDeltaMovement();
+                entity.setDeltaMovement(
+                    motion.x + (dx / dist) * ACCELERATION,
+                    motion.y + (dy / dist) * ACCELERATION,
+                    motion.z + (dz / dist) * ACCELERATION
+                );
+            } else {
                 pickRandomSwimTarget();
                 dx = waypointX - entity.getX();
                 dy = waypointY - entity.getY();
@@ -81,18 +89,18 @@ public class AquaticSwimGoal extends Goal {
             }
         }
 
-        // Apply acceleration continuously (F&A Revival style)
-        if (dist > 0.5) {
-            Vec3 motion = entity.getDeltaMovement();
-            entity.setDeltaMovement(
-                motion.x + (dx / dist) * ACCELERATION,
-                motion.y + (dy / dist) * ACCELERATION,
-                motion.z + (dz / dist) * ACCELERATION
-            );
+        // F&A Revival yaw interpolation (offset by 180 for 1.20.1 Blockbench models)
+        Vec3 motion = entity.getDeltaMovement();
+        if (motion.x * motion.x + motion.z * motion.z > 0.0001) {
+            // Original F&A: -atan2(X, Z). 
+            // 1.20 Blockbench models face opposite, so we need + 180.
+            float targetYaw = (float) (Math.atan2(motion.z, motion.x) * (180D / Math.PI)) - 90.0F;
+            float smoothYaw = net.minecraft.util.Mth.approachDegrees(entity.getYRot(), targetYaw, 10.0F);
+            
+            entity.setYRot(smoothYaw);
+            entity.yBodyRot = smoothYaw;
+            entity.yHeadRot = smoothYaw;
         }
-
-        // Use native look control instead of manual backwards yaw snapping
-        entity.getLookControl().setLookAt(waypointX, waypointY, waypointZ, 10.0f, 40.0f);
 
         // Stuck detection
         if (swimTimer % STUCK_CHECK_INTERVAL == 0) {
