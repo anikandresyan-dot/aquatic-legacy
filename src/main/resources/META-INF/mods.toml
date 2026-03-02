@@ -1,0 +1,32 @@
+modLoader = "javafml"
+loaderVersion = "[47,)"
+
+license = "MIT"
+
+[[mods]]
+modId = "aquatic_legacy"
+version = "1.0.0"
+displayName = "Aquatic Legacy: Prehistoric Seas"
+description = "Adds prehistoric aquatic reptiles and dinosaurs to Minecraft with Fossils-quality AI, animations, and mechanics."
+authors = "AquaticLegacy Team"
+
+[[dependencies.aquatic_legacy]]
+modId = "forge"
+mandatory = true
+versionRange = "[47,)"
+ordering = "NONE"
+side = "BOTH"
+
+[[dependencies.aquatic_legacy]]
+modId = "minecraft"
+mandatory = true
+versionRange = "[1.20.1,1.20.2)"
+ordering = "NONE"
+side = "BOTH"
+
+[[dependencies.aquatic_legacy]]
+modId = "geckolib"
+mandatory = true
+versionRange = "[4.4.7,)"
+ordering = "AFTER"
+side = "BOTH"
