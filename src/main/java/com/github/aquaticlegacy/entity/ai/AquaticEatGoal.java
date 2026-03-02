@@ -4,25 +4,22 @@ import com.github.aquaticlegacy.entity.prehistoric.AquaticPrehistoric;
 import net.minecraft.world.entity.ai.goal.Goal;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.phys.Vec3;
 
 import java.util.EnumSet;
 import java.util.List;
 
 /**
  * Eat dropped food items from the water.
- * Uses direct deltaMovement manipulation (F&A Revival style) to swim toward food.
+ * Uses Pure Vanilla PathNavigation.
  */
 public class AquaticEatGoal extends Goal {
     private final AquaticPrehistoric entity;
     private ItemEntity targetFood;
     private int searchCooldown;
 
-    private static final double ACCELERATION = 0.1;
-
     public AquaticEatGoal(AquaticPrehistoric entity) {
         this.entity = entity;
-        this.setFlags(EnumSet.of(Flag.MOVE));
+        this.setFlags(EnumSet.of(Flag.MOVE, Flag.LOOK));
     }
 
     @Override
@@ -62,19 +59,16 @@ public class AquaticEatGoal extends Goal {
 
     @Override
     public void start() {
-        // No need for MoveControl — tick() drives motion directly
+        entity.getNavigation().moveTo(targetFood, 1.2D);
     }
 
     @Override
     public void tick() {
         if (targetFood == null || !targetFood.isAlive()) return;
 
-        double dx = targetFood.getX() - entity.getX();
-        double dy = targetFood.getY() - entity.getY();
-        double dz = targetFood.getZ() - entity.getZ();
-        double dist = Math.sqrt(dx * dx + dy * dy + dz * dz);
+        double dist = entity.distanceToSqr(targetFood);
 
-        if (dist < 2.0) {
+        if (dist < 4.0) { // Sqr distance < 4 means raw distance < 2
             // Eat the item
             ItemStack stack = targetFood.getItem();
             int foodValue = entity.getFoodValue(stack);
@@ -85,36 +79,17 @@ public class AquaticEatGoal extends Goal {
             }
             entity.playSound(net.minecraft.sounds.SoundEvents.GENERIC_EAT, 1.0f, 1.0f);
             targetFood = null;
-        } else if (dist > 0.5) {
-            // F&A Revival Pulsing Acceleration
-            if (--searchCooldown <= 0) {
-                searchCooldown = entity.getRandom().nextInt(10) + 5;
-                Vec3 motion = entity.getDeltaMovement();
-                entity.setDeltaMovement(
-                    motion.x + (dx / dist) * ACCELERATION,
-                    motion.y + (dy / dist) * ACCELERATION,
-                    motion.z + (dz / dist) * ACCELERATION
-                );
+        } else {
+            // Keep navigating to moving items
+            if (entity.tickCount % 10 == 0) {
+                entity.getNavigation().moveTo(targetFood, 1.2D);
             }
-        }
-
-        // F&A Revival yaw interpolation (offset by 180 for 1.20.1 Blockbench models)
-        Vec3 motion = entity.getDeltaMovement();
-        if (motion.x * motion.x + motion.z * motion.z > 0.0001) {
-            // Native smooth look control as backup
-            entity.getLookControl().setLookAt(targetFood, 30, 30);
-            
-            float targetYaw = (float) (Math.atan2(motion.z, motion.x) * (180D / Math.PI)) - 90.0F;
-            float smoothYaw = net.minecraft.util.Mth.approachDegrees(entity.getYRot(), targetYaw, 15.0F);
-            
-            entity.setYRot(smoothYaw);
-            entity.yBodyRot = smoothYaw;
-            entity.yHeadRot = smoothYaw;
         }
     }
 
     @Override
     public void stop() {
         targetFood = null;
+        entity.getNavigation().stop();
     }
 }
