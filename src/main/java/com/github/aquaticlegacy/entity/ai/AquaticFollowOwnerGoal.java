@@ -83,14 +83,8 @@ public class AquaticFollowOwnerGoal extends Goal {
             );
         }
 
-        // Look at owner + yaw from motion
+        // Look at owner smoothly
         entity.getLookControl().setLookAt(owner, 10.0f, 40.0f);
-        Vec3 motion = entity.getDeltaMovement();
-        if (motion.x * motion.x + motion.z * motion.z > 0.0001) {
-            float yaw = -((float) Math.atan2(motion.x, motion.z)) * (180F / (float) Math.PI);
-            entity.setYRot(yaw);
-            entity.yBodyRot = yaw;
-        }
     }
 
     @Override
