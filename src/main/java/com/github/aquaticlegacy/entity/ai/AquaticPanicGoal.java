@@ -3,22 +3,17 @@ package com.github.aquaticlegacy.entity.ai;
 import com.github.aquaticlegacy.entity.prehistoric.AquaticPrehistoric;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.entity.ai.goal.Goal;
-import net.minecraft.world.phys.Vec3;
 
 import java.util.EnumSet;
 
 /**
  * Panic/flee goal for passive aquatic creatures when hurt.
- * Uses direct deltaMovement manipulation for fast fleeing (F&A Revival style).
+ * Uses Pure Vanilla 1.20 PathNavigation for fast fleeing.
  */
 public class AquaticPanicGoal extends Goal {
     private final AquaticPrehistoric entity;
     private final double speedMultiplier;
     private double targetX, targetY, targetZ;
-    private int panicTimer;
-    private int courseChangeCooldown;
-
-    private static final double PANIC_ACCELERATION = 0.15; // Faster than normal swim
 
     public AquaticPanicGoal(AquaticPrehistoric entity, double speedMultiplier) {
         this.entity = entity;
@@ -29,77 +24,40 @@ public class AquaticPanicGoal extends Goal {
     @Override
     public boolean canUse() {
         if (entity.getLastHurtByMob() == null) return false;
-        return entity.tickCount - entity.getLastHurtByMobTimestamp() < 100;
+        if (entity.tickCount - entity.getLastHurtByMobTimestamp() > 100) return false;
+        return findRandomFleePosition();
     }
 
     @Override
     public boolean canContinueToUse() {
-        return panicTimer > 0;
+        return !entity.getNavigation().isDone();
     }
 
     @Override
     public void start() {
-        panicTimer = 100;
-        courseChangeCooldown = 0;
-        findRandomFleePosition();
+        entity.getNavigation().moveTo(targetX, targetY, targetZ, speedMultiplier * 1.5);
     }
 
-    @Override
-    public void tick() {
-        panicTimer--;
-
-        double dx = targetX - entity.getX();
-        double dy = targetY - entity.getY();
-        double dz = targetZ - entity.getZ();
-        double dist = Math.sqrt(dx * dx + dy * dy + dz * dz);
-
-        if (--courseChangeCooldown <= 0) {
-            courseChangeCooldown = 10; // Re-evaluate more frequently when panicking
-            if (dist <= 1.0 || entity.horizontalCollision) {
-                // Reached flee point or hit a wall, pick another
-                findRandomFleePosition();
-                dx = targetX - entity.getX();
-                dy = targetY - entity.getY();
-                dz = targetZ - entity.getZ();
-                dist = Math.sqrt(dx * dx + dy * dy + dz * dz);
-            }
-            
-            // F&A Revival Pulsing Acceleration
-            if (dist > 1.0) {
-                double accel = PANIC_ACCELERATION * speedMultiplier;
-                Vec3 motion = entity.getDeltaMovement();
-                entity.setDeltaMovement(
-                    motion.x + (dx / dist) * accel,
-                    motion.y + (dy / dist) * accel,
-                    motion.z + (dz / dist) * accel
-                );
-            }
-        }
-
-        // F&A Revival yaw interpolation (offset by 180 for 1.20.1 Blockbench models)
-        Vec3 motion = entity.getDeltaMovement();
-        if (motion.x * motion.x + motion.z * motion.z > 0.0001) {
-            // Native smooth look control as backup
-            entity.getLookControl().setLookAt(targetX, targetY, targetZ, 20.0f, 40.0f);
-            
-            float targetYaw = (float) (Math.atan2(motion.z, motion.x) * (180D / Math.PI)) - 90.0F;
-            float smoothYaw = net.minecraft.util.Mth.approachDegrees(entity.getYRot(), targetYaw, 15.0F);
-            
-            entity.setYRot(smoothYaw);
-            entity.yBodyRot = smoothYaw;
-            entity.yHeadRot = smoothYaw;
-        }
-    }
-
-    private void findRandomFleePosition() {
+    private boolean findRandomFleePosition() {
         BlockPos pos = entity.blockPosition();
-        targetX = pos.getX() + (entity.getRandom().nextDouble() - 0.5) * 24.0;
-        targetY = Math.max(entity.level().getMinBuildHeight() + 5, pos.getY() + (entity.getRandom().nextDouble() - 0.3) * 10.0);
-        targetZ = pos.getZ() + (entity.getRandom().nextDouble() - 0.5) * 24.0;
+        for (int i = 0; i < 10; i++) {
+            double tx = pos.getX() + (entity.getRandom().nextDouble() - 0.5) * 24.0;
+            double ty = Math.max(entity.level().getMinBuildHeight() + 5, pos.getY() + (entity.getRandom().nextDouble() - 0.3) * 10.0);
+            double tz = pos.getZ() + (entity.getRandom().nextDouble() - 0.5) * 24.0;
+            
+            BlockPos targetPos = BlockPos.containing(tx, ty, tz);
+            if (!entity.level().getFluidState(targetPos).isEmpty()) {
+                targetX = tx;
+                targetY = ty;
+                targetZ = tz;
+                return true;
+            }
+        }
+        return false;
     }
 
     @Override
     public void stop() {
-        panicTimer = 0;
+        entity.getNavigation().stop();
     }
 }
