@@ -18,7 +18,7 @@ public class AquaticGeoRenderer extends GeoEntityRenderer<AquaticPrehistoric> {
         this.shadowRadius = 0.5f;
     }
 
-    @Override
+    // We will find the correct method name using reflection via the build task
     public void scaleModelForRender(float widthScale, float heightScale, PoseStack poseStack, 
                                       AquaticPrehistoric entity, float partialTick) {
         float scale = entity.getCurrentScale();
