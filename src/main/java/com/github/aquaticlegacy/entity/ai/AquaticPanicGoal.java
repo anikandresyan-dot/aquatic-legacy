@@ -48,35 +48,35 @@ public class AquaticPanicGoal extends Goal {
     public void tick() {
         panicTimer--;
 
+        double dx = targetX - entity.getX();
+        double dy = targetY - entity.getY();
+        double dz = targetZ - entity.getZ();
+        double dist = Math.sqrt(dx * dx + dy * dy + dz * dz);
+
         if (--courseChangeCooldown <= 0) {
             courseChangeCooldown = 10; // Re-evaluate more frequently when panicking
-
-            double dx = targetX - entity.getX();
-            double dy = targetY - entity.getY();
-            double dz = targetZ - entity.getZ();
-            double dist = Math.sqrt(dx * dx + dy * dy + dz * dz);
-
-            if (dist > 1.0) {
-                double accel = PANIC_ACCELERATION * speedMultiplier;
-                Vec3 motion = entity.getDeltaMovement();
-                entity.setDeltaMovement(
-                    motion.x + (dx / dist) * accel,
-                    motion.y + (dy / dist) * accel,
-                    motion.z + (dz / dist) * accel
-                );
-            } else {
-                // Reached flee point, pick another
+            if (dist <= 1.0 || entity.horizontalCollision) {
+                // Reached flee point or hit a wall, pick another
                 findRandomFleePosition();
+                dx = targetX - entity.getX();
+                dy = targetY - entity.getY();
+                dz = targetZ - entity.getZ();
+                dist = Math.sqrt(dx * dx + dy * dy + dz * dz);
             }
         }
 
-        // Yaw from motion
-        Vec3 motion = entity.getDeltaMovement();
-        if (motion.x * motion.x + motion.z * motion.z > 0.0001) {
-            float yaw = -((float) Math.atan2(motion.x, motion.z)) * (180F / (float) Math.PI);
-            entity.setYRot(yaw);
-            entity.yBodyRot = yaw;
+        if (dist > 1.0) {
+            double accel = PANIC_ACCELERATION * speedMultiplier;
+            Vec3 motion = entity.getDeltaMovement();
+            entity.setDeltaMovement(
+                motion.x + (dx / dist) * accel,
+                motion.y + (dy / dist) * accel,
+                motion.z + (dz / dist) * accel
+            );
         }
+
+        // Look at target smoothly
+        entity.getLookControl().setLookAt(targetX, targetY, targetZ, 20.0f, 40.0f);
     }
 
     private void findRandomFleePosition() {
