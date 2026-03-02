@@ -1,0 +1,23 @@
+{
+    "itemGroup.aquatic_legacy": "Водное Наследие: Доисторические Моря",
+    "entity.aquatic_legacy.elasmosaurus": "Эласмозавр",
+    "entity.aquatic_legacy.kronosaurus": "Кронозавр",
+    "entity.aquatic_legacy.dunkleosteus": "Дунклеостей",
+    "entity.aquatic_legacy.shonisaurus": "Шонизавр",
+    "entity.aquatic_legacy.tylosaurus": "Тилозавр",
+    "entity.aquatic_legacy.archelon": "Архелон",
+    "item.aquatic_legacy.elasmosaurus_spawn_egg": "Яйцо призыва Эласмозавра",
+    "item.aquatic_legacy.kronosaurus_spawn_egg": "Яйцо призыва Кронозавра",
+    "item.aquatic_legacy.dunkleosteus_spawn_egg": "Яйцо призыва Дунклеостея",
+    "item.aquatic_legacy.shonisaurus_spawn_egg": "Яйцо призыва Шонизавра",
+    "item.aquatic_legacy.tylosaurus_spawn_egg": "Яйцо призыва Тилозавра",
+    "item.aquatic_legacy.archelon_spawn_egg": "Яйцо призыва Архелона",
+    "item.aquatic_legacy.elasmosaurus_dna": "ДНК Эласмозавра",
+    "item.aquatic_legacy.kronosaurus_dna": "ДНК Кронозавра",
+    "item.aquatic_legacy.dunkleosteus_dna": "ДНК Дунклеостея",
+    "item.aquatic_legacy.shonisaurus_dna": "ДНК Шонизавра",
+    "item.aquatic_legacy.tylosaurus_dna": "ДНК Тилозавра",
+    "item.aquatic_legacy.archelon_dna": "ДНК Архелона",
+    "item.aquatic_legacy.aquatic_fossil": "Водный Окаменелость",
+    "item.aquatic_legacy.ancient_scale": "Древняя Чешуя"
+}
