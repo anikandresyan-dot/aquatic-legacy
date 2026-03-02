@@ -85,13 +85,6 @@ public class AquaticGrabAttackGoal extends Goal {
                         motion.y + (dy / d) * accel,
                         motion.z + (dz / d) * accel
                     );
-                    // Yaw from motion
-                    net.minecraft.world.phys.Vec3 m = entity.getDeltaMovement();
-                    if (m.x * m.x + m.z * m.z > 0.0001) {
-                        float yaw = -((float) Math.atan2(m.x, m.z)) * (180F / (float) Math.PI);
-                        entity.setYRot(yaw);
-                        entity.yBodyRot = yaw;
-                    }
                 }
             } else if (attackTimer <= 0) {
                 // Attempt grab on large enough adults
