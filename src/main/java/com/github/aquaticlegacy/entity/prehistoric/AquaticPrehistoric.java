@@ -202,10 +202,13 @@ public abstract class AquaticPrehistoric extends WaterAnimal implements GeoEntit
 
     @Nullable
     @Override
-    public Entity getOwner() {
+    public LivingEntity getOwner() {
         UUID uuid = this.getOwnerUUID();
         if (uuid != null && this.level() instanceof ServerLevel serverLevel) {
-            return serverLevel.getEntity(uuid);
+            Entity entity = serverLevel.getEntity(uuid);
+            if (entity instanceof LivingEntity livingEntity) {
+                return livingEntity;
+            }
         }
         return null;
     }
