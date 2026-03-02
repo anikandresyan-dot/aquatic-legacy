@@ -484,12 +484,13 @@ public abstract class AquaticPrehistoric extends WaterAnimal implements GeoEntit
     @Override
     public void travel(Vec3 travelVector) {
         if (this.isEffectiveAi() && this.isInWater()) {
-            // F&A Revival style: small moveRelative multiplier, motion driven by AI goals
-            this.moveRelative(0.02F, travelVector);
+            // Native 1.20 Dolphin-like travel mechanics
+            this.moveRelative(this.getSpeed(), travelVector);
             this.move(MoverType.SELF, this.getDeltaMovement());
-            // Uniform drag on all axes (same as F&A Revival's 0.9)
             this.setDeltaMovement(this.getDeltaMovement().scale(0.9D));
-            // No gravity pull here — vertical movement is controlled by AI goals directly
+            if (this.getTarget() == null) {
+                this.setDeltaMovement(this.getDeltaMovement().add(0.0D, -0.005D, 0.0D));
+            }
         } else {
             super.travel(travelVector);
         }
