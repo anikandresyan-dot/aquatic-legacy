@@ -1,0 +1,31 @@
+{
+  "ai": {
+    "activity": "BOTH",
+    "attacking": "BASIC",
+    "climbing": "NONE",
+    "moving": "AQUATIC",
+    "response": "WATER_CALM",
+    "taming": "IMPRINTING"
+  },
+  "attributes": {
+    "damageBase": 1.0,
+    "damageMax": 6.0,
+    "healthBase": 10.0,
+    "healthMax": 30.0,
+    "speedBase": 0.08,
+    "speedMax": 0.14,
+    "armorBase": 0.0,
+    "armorMax": 2.0,
+    "knockBackResistanceBase": 0.0,
+    "knockBackResistanceMax": 0.5
+  },
+  "adultAgeDays": 8,
+  "teenAgeDays": 3,
+  "breaksBlocks": false,
+  "canBeRidden": false,
+  "diet": "PISCIVORE",
+  "maxHunger": 125,
+  "maxPopulation": 10,
+  "scaleBase": 0.25,
+  "scaleMax": 1.2
+}
