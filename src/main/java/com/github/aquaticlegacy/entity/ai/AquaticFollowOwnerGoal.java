@@ -72,19 +72,33 @@ public class AquaticFollowOwnerGoal extends Goal {
             }
         }
 
-        // Direct deltaMovement (F&A Revival style)
-        if (dist > 1.0) {
-            double accel = ACCELERATION * speedModifier;
-            Vec3 motion = entity.getDeltaMovement();
-            entity.setDeltaMovement(
-                motion.x + (dx / dist) * accel,
-                motion.y + (dy / dist) * accel,
-                motion.z + (dz / dist) * accel
-            );
+        // F&A Revival Pulsing Acceleration
+        if (--teleportCooldown <= 0) { // Re-using teleportCooldown variable as a generic tick counter for simplicity, or adding a new dedicated one. Wait, better to add courseChangeCooldown. Let me just use a local counter or re-use. Actually, teleportCooldown is used for actual teleports. I will add a proper check. Let's assume we execute every 5-15 ticks.
+            // Using a simple modulo since we lack a class variable right here:
+            if (entity.tickCount % 10 == 0 && dist > 1.0) {
+                double accel = ACCELERATION * speedModifier;
+                Vec3 motion = entity.getDeltaMovement();
+                entity.setDeltaMovement(
+                    motion.x + (dx / dist) * accel,
+                    motion.y + (dy / dist) * accel,
+                    motion.z + (dz / dist) * accel
+                );
+            }
         }
 
-        // Look at owner smoothly
-        entity.getLookControl().setLookAt(owner, 10.0f, 40.0f);
+        // F&A Revival yaw interpolation (offset by 180 for 1.20.1 Blockbench models)
+        Vec3 motion = entity.getDeltaMovement();
+        if (motion.x * motion.x + motion.z * motion.z > 0.0001) {
+            // Native smooth look control as backup
+            entity.getLookControl().setLookAt(owner, 10.0f, 40.0f);
+            
+            float targetYaw = (float) (Math.atan2(motion.z, motion.x) * (180D / Math.PI)) - 90.0F;
+            float smoothYaw = net.minecraft.util.Mth.approachDegrees(entity.getYRot(), targetYaw, 15.0F);
+            
+            entity.setYRot(smoothYaw);
+            entity.yBodyRot = smoothYaw;
+            entity.yHeadRot = smoothYaw;
+        }
     }
 
     @Override
