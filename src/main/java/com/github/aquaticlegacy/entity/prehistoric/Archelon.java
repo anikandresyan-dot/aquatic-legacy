@@ -40,7 +40,7 @@ public class Archelon extends AquaticPrehistoric {
         this.goalSelector.addGoal(3, new AquaticStayGoal(this));
         this.goalSelector.addGoal(4, new AquaticEatGoal(this));
         this.goalSelector.addGoal(5, new AquaticMatingGoal(this, 0.8));
-        this.goalSelector.addGoal(6, new AquaticSwimGoal(this));
+        this.goalSelector.addGoal(6, new AquaticSwimGoal(this, 1.0D));
         this.goalSelector.addGoal(7, new RandomStrollGoal(this, 0.8, 30));
         this.goalSelector.addGoal(8, new RandomLookAroundGoal(this));
         
