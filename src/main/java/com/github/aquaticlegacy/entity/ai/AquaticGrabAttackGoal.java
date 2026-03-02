@@ -8,7 +8,7 @@ import java.util.EnumSet;
 
 /**
  * Grab attack for large predators (Kronosaurus, Tylosaurus).
- * Mirrors Fossils' GrabMeleeAttackGoal — grab the target, hold it, deal damage.
+ * Uses Pure Vanilla PathNavigation for chasing.
  */
 public class AquaticGrabAttackGoal extends Goal {
     private final AquaticPrehistoric entity;
@@ -42,6 +42,7 @@ public class AquaticGrabAttackGoal extends Goal {
         attackTimer = 0;
         grabTimer = 0;
         isGrabbing = false;
+        entity.getNavigation().moveTo(target, speedModifier * 1.2);
     }
 
     @Override
@@ -49,7 +50,7 @@ public class AquaticGrabAttackGoal extends Goal {
         if (target == null) return;
 
         entity.getLookControl().setLookAt(target, 30.0F, 30.0F);
-        double dist = entity.distanceToSqr(target);
+        double distSq = entity.distanceToSqr(target);
 
         attackTimer--;
 
@@ -71,39 +72,11 @@ public class AquaticGrabAttackGoal extends Goal {
                 grabTimer = 0;
             }
         } else {
-            // Chase and attack using direct deltaMovement (F&A Revival style)
-            if (dist > 4.0) {
-                double dx = target.getX() - entity.getX();
-                double dy = target.getY() - entity.getY();
-                double dz = target.getZ() - entity.getZ();
-                double d = Math.sqrt(dx * dx + dy * dy + dz * dz);
-                if (d > 0.5) {
-                    // F&A Revival Pulsing Acceleration
-                    // Reusing attackTimer roughly or just entity.tickCount
-                    if (entity.tickCount % 10 == 0) {
-                        double accel = 0.12 * speedModifier;
-                        net.minecraft.world.phys.Vec3 motion = entity.getDeltaMovement();
-                        entity.setDeltaMovement(
-                            motion.x + (dx / d) * accel,
-                            motion.y + (dy / d) * accel,
-                            motion.z + (dz / d) * accel
-                        );
-                    }
+            // Chase using vanilla navigation
+            if (distSq > 4.0) {
+                if (entity.tickCount % 10 == 0) {
+                    entity.getNavigation().moveTo(target, speedModifier * 1.2);
                 }
-            }
-            
-            // F&A Revival yaw interpolation (offset by 180 for 1.20.1 Blockbench models)
-            net.minecraft.world.phys.Vec3 motion = entity.getDeltaMovement();
-            if (motion.x * motion.x + motion.z * motion.z > 0.0001) {
-                // Native smooth look control as backup
-                entity.getLookControl().setLookAt(target, 30.0F, 30.0F);
-                
-                float targetYaw = (float) (Math.atan2(motion.z, motion.x) * (180D / Math.PI)) - 90.0F;
-                float smoothYaw = net.minecraft.util.Mth.approachDegrees(entity.getYRot(), targetYaw, 15.0F);
-                
-                entity.setYRot(smoothYaw);
-                entity.yBodyRot = smoothYaw;
-                entity.yHeadRot = smoothYaw;
             } else if (attackTimer <= 0) {
                 // Attempt grab on large enough adults
                 if (entity.isAdult() && entity.getRandom().nextFloat() < 0.3f) {
@@ -131,5 +104,6 @@ public class AquaticGrabAttackGoal extends Goal {
         }
         target = null;
         isGrabbing = false;
+        entity.getNavigation().stop();
     }
 }
