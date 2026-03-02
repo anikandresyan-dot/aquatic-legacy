@@ -63,20 +63,32 @@ public class AquaticPanicGoal extends Goal {
                 dz = targetZ - entity.getZ();
                 dist = Math.sqrt(dx * dx + dy * dy + dz * dz);
             }
+            
+            // F&A Revival Pulsing Acceleration
+            if (dist > 1.0) {
+                double accel = PANIC_ACCELERATION * speedMultiplier;
+                Vec3 motion = entity.getDeltaMovement();
+                entity.setDeltaMovement(
+                    motion.x + (dx / dist) * accel,
+                    motion.y + (dy / dist) * accel,
+                    motion.z + (dz / dist) * accel
+                );
+            }
         }
 
-        if (dist > 1.0) {
-            double accel = PANIC_ACCELERATION * speedMultiplier;
-            Vec3 motion = entity.getDeltaMovement();
-            entity.setDeltaMovement(
-                motion.x + (dx / dist) * accel,
-                motion.y + (dy / dist) * accel,
-                motion.z + (dz / dist) * accel
-            );
+        // F&A Revival yaw interpolation (offset by 180 for 1.20.1 Blockbench models)
+        Vec3 motion = entity.getDeltaMovement();
+        if (motion.x * motion.x + motion.z * motion.z > 0.0001) {
+            // Native smooth look control as backup
+            entity.getLookControl().setLookAt(targetX, targetY, targetZ, 20.0f, 40.0f);
+            
+            float targetYaw = (float) (Math.atan2(motion.z, motion.x) * (180D / Math.PI)) - 90.0F;
+            float smoothYaw = net.minecraft.util.Mth.approachDegrees(entity.getYRot(), targetYaw, 15.0F);
+            
+            entity.setYRot(smoothYaw);
+            entity.yBodyRot = smoothYaw;
+            entity.yHeadRot = smoothYaw;
         }
-
-        // Look at target smoothly
-        entity.getLookControl().setLookAt(targetX, targetY, targetZ, 20.0f, 40.0f);
     }
 
     private void findRandomFleePosition() {
