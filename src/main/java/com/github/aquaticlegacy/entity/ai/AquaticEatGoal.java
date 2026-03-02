@@ -86,16 +86,31 @@ public class AquaticEatGoal extends Goal {
             entity.playSound(net.minecraft.sounds.SoundEvents.GENERIC_EAT, 1.0f, 1.0f);
             targetFood = null;
         } else if (dist > 0.5) {
-            // Direct deltaMovement toward food (F&A Revival style)
-            Vec3 motion = entity.getDeltaMovement();
-            entity.setDeltaMovement(
-                motion.x + (dx / dist) * ACCELERATION,
-                motion.y + (dy / dist) * ACCELERATION,
-                motion.z + (dz / dist) * ACCELERATION
-            );
+            // F&A Revival Pulsing Acceleration
+            if (--searchCooldown <= 0) {
+                searchCooldown = entity.getRandom().nextInt(10) + 5;
+                Vec3 motion = entity.getDeltaMovement();
+                entity.setDeltaMovement(
+                    motion.x + (dx / dist) * ACCELERATION,
+                    motion.y + (dy / dist) * ACCELERATION,
+                    motion.z + (dz / dist) * ACCELERATION
+                );
+            }
         }
 
-        entity.getLookControl().setLookAt(targetFood, 30, 30);
+        // F&A Revival yaw interpolation (offset by 180 for 1.20.1 Blockbench models)
+        Vec3 motion = entity.getDeltaMovement();
+        if (motion.x * motion.x + motion.z * motion.z > 0.0001) {
+            // Native smooth look control as backup
+            entity.getLookControl().setLookAt(targetFood, 30, 30);
+            
+            float targetYaw = (float) (Math.atan2(motion.z, motion.x) * (180D / Math.PI)) - 90.0F;
+            float smoothYaw = net.minecraft.util.Mth.approachDegrees(entity.getYRot(), targetYaw, 15.0F);
+            
+            entity.setYRot(smoothYaw);
+            entity.yBodyRot = smoothYaw;
+            entity.yHeadRot = smoothYaw;
+        }
     }
 
     @Override
