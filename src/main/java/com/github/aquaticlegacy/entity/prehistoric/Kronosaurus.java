@@ -28,7 +28,7 @@ public class Kronosaurus extends AquaticPrehistoric {
         this.goalSelector.addGoal(3, new AquaticStayGoal(this));
         this.goalSelector.addGoal(4, new AquaticEatGoal(this));
         this.goalSelector.addGoal(5, new AquaticMatingGoal(this, 1.0));
-        this.goalSelector.addGoal(6, new AquaticSwimGoal(this));
+        this.goalSelector.addGoal(6, new AquaticSwimGoal(this, 1.0D));
         this.goalSelector.addGoal(7, new RandomLookAroundGoal(this));
         
         this.targetSelector.addGoal(1, new HurtByTargetGoal(this));
